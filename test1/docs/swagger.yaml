@@ -1,20 +1,327 @@
 basePath: /
 definitions:
-  models.User:
+  dto.AssignRolePermissionsRequest:
+    properties:
+      permission_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - permission_ids
+    type: object
+  dto.AssignUserRolesRequest:
+    properties:
+      role_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - role_ids
+    type: object
+  dto.CreatePermissionRequest:
+    properties:
+      action:
+        example: create
+        type: string
+      code:
+        example: user:create
+        type: string
+      description:
+        example: 创建用户权限
+        type: string
+      method:
+        example: POST
+        type: string
+      name:
+        example: 用户创建
+        type: string
+      path:
+        example: /api/users
+        type: string
+      resource:
+        example: user
+        type: string
+      status:
+        example: 1
+        type: integer
+      type:
+        example: api
+        type: string
+    required:
+    - action
+    - code
+    - name
+    - resource
+    - type
+    type: object
+  dto.CreateRoleRequest:
+    properties:
+      code:
+        example: admin
+        type: string
+      description:
+        example: 系统管理员
+        type: string
+      name:
+        example: 管理员
+        type: string
+      status:
+        example: 1
+        type: integer
+    required:
+    - code
+    - name
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        example: admin@example.com
+        type: string
+      nickname:
+        example: 管理员
+        type: string
+      password:
+        example: "123456"
+        type: string
+      role_ids:
+        items:
+          type: integer
+        type: array
+      status:
+        example: 1
+        type: integer
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  dto.PermissionListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.PermissionResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.PermissionResponse:
+    properties:
+      action:
+        example: create
+        type: string
+      code:
+        example: user:create
+        type: string
+      created_at:
+        type: string
+      description:
+        example: 创建用户权限
+        type: string
+      id:
+        example: 1
+        type: integer
+      method:
+        example: POST
+        type: string
+      name:
+        example: 用户创建
+        type: string
+      path:
+        example: /api/users
+        type: string
+      resource:
+        example: user
+        type: string
+      status:
+        example: 1
+        type: integer
+      type:
+        example: api
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.RoleListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.RoleResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.RoleResponse:
+    properties:
+      code:
+        example: admin
+        type: string
+      created_at:
+        example: "2026-05-09T12:00:00Z"
+        type: string
+      description:
+        example: 系统管理员
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: 管理员
+        type: string
+      status:
+        example: 1
+        type: integer
+      updated_at:
+        example: "2026-05-09T12:00:00Z"
+        type: string
+    type: object
+  dto.RoleWithPermissionsResponse:
+    properties:
+      code:
+        example: admin
+        type: string
+      created_at:
+        type: string
+      description:
+        example: 系统管理员
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: 管理员
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/dto.PermissionResponse'
+        type: array
+      status:
+        example: 1
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  dto.UpdatePermissionRequest:
+    properties:
+      action:
+        example: create
+        type: string
+      code:
+        example: user:create
+        type: string
+      description:
+        example: 创建用户权限
+        type: string
+      method:
+        example: POST
+        type: string
+      name:
+        example: 用户创建
+        type: string
+      path:
+        example: /api/users
+        type: string
+      resource:
+        example: user
+        type: string
+      status:
+        example: 1
+        type: integer
+      type:
+        example: api
+        type: string
+    type: object
+  dto.UpdateRoleRequest:
+    properties:
+      code:
+        example: admin
+        type: string
+      description:
+        example: 系统管理员
+        type: string
+      name:
+        example: 管理员
+        type: string
+      status:
+        example: 1
+        type: integer
+    type: object
+  dto.UpdateUserRequest:
+    properties:
+      email:
+        example: admin@example.com
+        type: string
+      nickname:
+        example: 管理员
+        type: string
+      password:
+        example: "123456"
+        type: string
+      role_ids:
+        items:
+          type: integer
+        type: array
+      status:
+        example: 1
+        type: integer
+      username:
+        example: admin
+        type: string
+    type: object
+  dto.UserListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.UserResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.UserResponse:
     properties:
       created_at:
         type: string
       email:
+        example: admin@example.com
         type: string
       id:
+        example: 1
         type: integer
       nickname:
+        example: 管理员
         type: string
+      roles:
+        items:
+          $ref: '#/definitions/dto.RoleResponse'
+        type: array
       status:
+        example: 1
         type: integer
       updated_at:
         type: string
       username:
+        example: admin
+        type: string
+    type: object
+  utils.Response:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
         type: string
     type: object
 host: localhost:8080
@@ -47,56 +354,565 @@ paths:
       summary: 健康检查
       tags:
       - 系统
-  /api/users:
+  /api/permissions:
     get:
       consumes:
       - application/json
-      description: 获取所有用户列表
+      description: 获取权限列表，支持分页和条件查询
+      parameters:
+      - description: 权限名称（模糊查询）
+        in: query
+        name: name
+        type: string
+      - description: 权限编码（模糊查询）
+        in: query
+        name: code
+        type: string
+      - description: 权限类型（api/menu/button）
+        in: query
+        name: type
+        type: string
+      - description: 资源名称
+        in: query
+        name: resource
+        type: string
+      - description: 操作类型
+        in: query
+        name: action
+        type: string
+      - description: 状态（1启用 0禁用）
+        in: query
+        name: status
+        type: integer
+      - description: 页码（默认1）
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量（默认10）
+        in: query
+        name: page_size
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: 成功
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PermissionListResponse'
+              type: object
         "500":
           description: 服务器内部错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
+      summary: 获取权限列表
+      tags:
+      - 权限管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新权限
+      parameters:
+      - description: 权限信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PermissionResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 创建权限
+      tags:
+      - 权限管理
+  /api/permissions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除权限
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 权限不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 删除权限
+      tags:
+      - 权限管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取权限详情
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PermissionResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 权限不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取权限详情
+      tags:
+      - 权限管理
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新权限信息
+      parameters:
+      - description: 权限ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePermissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.PermissionResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 权限不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 更新权限
+      tags:
+      - 权限管理
+  /api/roles:
+    get:
+      consumes:
+      - application/json
+      description: 获取角色列表，支持分页和条件查询
+      parameters:
+      - description: 角色名称（模糊查询）
+        in: query
+        name: name
+        type: string
+      - description: 角色编码（模糊查询）
+        in: query
+        name: code
+        type: string
+      - description: 状态（1启用 0禁用）
+        in: query
+        name: status
+        type: integer
+      - description: 页码（默认1）
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量（默认10）
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RoleListResponse'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取角色列表
+      tags:
+      - 角色管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新角色
+      parameters:
+      - description: 角色信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RoleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 创建角色
+      tags:
+      - 角色管理
+  /api/roles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除角色
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 删除角色
+      tags:
+      - 角色管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取角色详情
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RoleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取角色详情
+      tags:
+      - 角色管理
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新角色信息
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 角色信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RoleResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 更新角色
+      tags:
+      - 角色管理
+  /api/roles/{id}/permissions:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定角色的所有权限
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PermissionResponse'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取角色的权限列表
+      tags:
+      - 角色管理
+    put:
+      consumes:
+      - application/json
+      description: 为指定角色分配多个权限（覆盖原有权限）
+      parameters:
+      - description: 角色ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 权限ID列表
+        in: body
+        name: permissions
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AssignRolePermissionsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.RoleWithPermissionsResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 角色不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 为角色分配权限
+      tags:
+      - 角色管理
+  /api/users:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户列表，支持分页和条件查询
+      parameters:
+      - description: 用户名（模糊查询）
+        in: query
+        name: username
+        type: string
+      - description: 昵称（模糊查询）
+        in: query
+        name: nickname
+        type: string
+      - description: 邮箱（模糊查询）
+        in: query
+        name: email
+        type: string
+      - description: 状态（1启用 0禁用）
+        in: query
+        name: status
+        type: integer
+      - description: 页码（默认1）
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量（默认10）
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserListResponse'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
       summary: 获取用户列表
       tags:
       - 用户管理
     post:
       consumes:
       - application/json
-      description: 创建一个新用户
+      description: 创建一个新用户，支持同时分配角色
       parameters:
       - description: 用户信息
         in: body
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/dto.CreateUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: 成功
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "500":
           description: 服务器内部错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
       summary: 创建用户
       tags:
       - 用户管理
@@ -117,30 +933,26 @@ paths:
         "200":
           description: 成功
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "400":
           description: 请求参数错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "404":
           description: 用户不存在
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "500":
           description: 服务器内部错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
       summary: 删除用户
       tags:
       - 用户管理
     get:
       consumes:
       - application/json
-      description: 根据ID获取用户详情
+      description: 根据ID获取用户详情，包含角色信息
       parameters:
       - description: 用户ID
         in: path
@@ -153,30 +965,31 @@ paths:
         "200":
           description: 成功
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "404":
           description: 用户不存在
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "500":
           description: 服务器内部错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
       summary: 获取用户详情
       tags:
       - 用户管理
     put:
       consumes:
       - application/json
-      description: 根据ID更新用户信息
+      description: 根据ID更新用户信息，支持同时更新角色
       parameters:
       - description: 用户ID
         in: path
@@ -188,31 +1001,155 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/models.User'
+          $ref: '#/definitions/dto.UpdateUserRequest'
       produces:
       - application/json
       responses:
         "200":
           description: 成功
           schema:
-            additionalProperties: true
-            type: object
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
         "400":
           description: 请求参数错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "404":
           description: 用户不存在
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
         "500":
           description: 服务器内部错误
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/utils.Response'
       summary: 更新用户
+      tags:
+      - 用户管理
+  /api/users/{id}/permissions:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定用户的所有权限（从角色中聚合）
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.PermissionResponse'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取用户的权限列表
+      tags:
+      - 用户管理
+  /api/users/{id}/roles:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定用户的所有角色
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/dto.RoleResponse'
+                  type: array
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取用户的角色列表
+      tags:
+      - 用户管理
+    put:
+      consumes:
+      - application/json
+      description: 为指定用户分配多个角色（覆盖原有角色）
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 角色ID列表
+        in: body
+        name: roles
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AssignUserRolesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UserResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 用户不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 为用户分配角色
       tags:
       - 用户管理
 schemes:

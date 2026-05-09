@@ -47,7 +47,13 @@ func main() {
 	if err := utils.InitMySQL(); err != nil {
 		log.Fatalf("Failed to init MySQL: %v", err)
 	}
-	if err := utils.DB.AutoMigrate(&models.User{}); err != nil {
+	if err := utils.DB.AutoMigrate(
+		&models.User{},
+		&models.Role{},
+		&models.Permission{},
+		&models.UserRole{},
+		&models.RolePermission{},
+	); err != nil {
 		log.Fatalf("Failed to auto migrate: %v", err)
 	}
 

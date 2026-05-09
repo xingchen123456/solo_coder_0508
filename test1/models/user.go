@@ -20,6 +20,7 @@ type User struct {
 	Nickname string `gorm:"size:50" json:"nickname"`
 	Email    string `gorm:"size:100" json:"email"`
 	Status   int    `gorm:"default:1" json:"status"`
+	Roles    []Role `gorm:"many2many:user_roles;" json:"roles,omitempty"`
 }
 
 func (User) TableName() string {
