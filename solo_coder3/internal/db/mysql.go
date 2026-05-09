@@ -11,6 +11,17 @@ import (
 
 var DB *gorm.DB
 
+type Product struct {
+	ID          uint      `gorm:"primaryKey"`
+	ProductID   string    `gorm:"uniqueIndex;size:64"`
+	Name        string    `gorm:"size:255;not null"`
+	Description string    `gorm:"type:text"`
+	Price       float64   `gorm:"not null;default:0"`
+	Status      int       `gorm:"not null;default:1"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}
+
 type Inventory struct {
 	ID        uint   `gorm:"primaryKey"`
 	ProductID string `gorm:"uniqueIndex;size:64"`
@@ -35,7 +46,7 @@ func Init(cfg *config.MySQLConfig) error {
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
-	if err := DB.AutoMigrate(&Inventory{}); err != nil {
+	if err := DB.AutoMigrate(&Product{}, &Inventory{}); err != nil {
 		return err
 	}
 

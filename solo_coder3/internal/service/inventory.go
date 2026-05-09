@@ -10,6 +10,7 @@ import (
 
 	"inventory-service/internal/cache"
 	"inventory-service/internal/db"
+	"inventory-service/internal/lock"
 )
 
 var (
@@ -100,9 +101,14 @@ func DeductStock(ctx context.Context, req DeductRequest) (*DeductResult, error) 
 		}, nil
 	}
 
+	if err := CheckProductAvailable(ctx, req.ProductID, req.Quantity); err != nil {
+		_ = cache.MarkRequestProcessed(ctx, req.RequestID, "product_error", idempotentTTL)
+		return nil, err
+	}
+
 	var lastErr error
 	for attempt := 0; attempt < maxRetryAttempts; attempt++ {
-		lock, acquired, err := cache.TryLock(ctx, req.ProductID, req.RequestID, lockExpiration)
+		l, acquired, err := lock.TryLock(ctx, lock.TypeInventoryLock, req.ProductID, req.RequestID, lockExpiration)
 		if err != nil {
 			lastErr = err
 			continue
@@ -115,7 +121,7 @@ func DeductStock(ctx context.Context, req DeductRequest) (*DeductResult, error) 
 			return nil, ErrLockAcquireFailed
 		}
 
-		result, deductErr := deductWithLock(ctx, lock, req)
+		result, deductErr := deductWithLock(ctx, l, req)
 		if deductErr != nil {
 			lastErr = deductErr
 			continue
@@ -127,14 +133,14 @@ func DeductStock(ctx context.Context, req DeductRequest) (*DeductResult, error) 
 	return nil, lastErr
 }
 
-func deductWithLock(ctx context.Context, lock *cache.Lock, req DeductRequest) (*DeductResult, error) {
+func deductWithLock(ctx context.Context, l *lock.Lock, req DeductRequest) (*DeductResult, error) {
 	defer func() {
-		_ = lock.Unlock(context.Background())
+		_ = l.Unlock(context.Background())
 	}()
 
 	extendCtx, cancelExtend := context.WithCancel(context.Background())
 	defer cancelExtend()
-	go extendLock(extendCtx, lock)
+	go lock.ExtendLock(extendCtx, l, lockExpiration)
 
 	redisResult, err := cache.DecrementStock(ctx, req.ProductID, req.Quantity)
 	if err == nil && redisResult == 0 {
@@ -166,20 +172,6 @@ func deductWithLock(ctx context.Context, lock *cache.Lock, req DeductRequest) (*
 		Retried: false,
 		Reason:  "success",
 	}, nil
-}
-
-func extendLock(ctx context.Context, lock *cache.Lock) {
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			_, _ = lock.Extend(ctx, lockExpiration)
-		}
-	}
 }
 
 func deductFromDB(ctx context.Context, req DeductRequest) error {
@@ -257,24 +249,16 @@ func AddToCart(ctx context.Context, req AddToCartRequest) error {
 		return ErrInvalidQuantity
 	}
 
+	if err := CheckProductAvailable(ctx, req.ProductID, req.Quantity); err != nil {
+		return err
+	}
+
 	exists, err := cache.CartItemExists(ctx, req.UserID, req.ProductID)
 	if err != nil {
 		return err
 	}
 	if exists {
 		return ErrCartItemExists
-	}
-
-	stock, err := GetStock(ctx, req.ProductID)
-	if err != nil {
-		if errors.Is(err, ErrProductNotFound) {
-			return ErrProductNotFound
-		}
-		return err
-	}
-
-	if stock < req.Quantity {
-		return ErrInsufficientStock
 	}
 
 	return cache.CartAddItem(ctx, req.UserID, req.ProductID, req.Quantity)
@@ -326,13 +310,8 @@ func UpdateCartItem(ctx context.Context, req UpdateCartRequest) error {
 		return cache.CartDeleteItem(ctx, req.UserID, req.ProductID)
 	}
 
-	stock, err := GetStock(ctx, req.ProductID)
-	if err != nil {
+	if err := CheckProductAvailable(ctx, req.ProductID, req.Quantity); err != nil {
 		return err
-	}
-
-	if stock < req.Quantity {
-		return ErrInsufficientStock
 	}
 
 	return cache.CartAddItem(ctx, req.UserID, req.ProductID, req.Quantity)

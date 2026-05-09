@@ -2,12 +2,14 @@ package cache
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 
 	"inventory-service/config"
+	"inventory-service/internal/db"
 )
 
 var RDB *redis.Client
@@ -24,20 +26,6 @@ if tonumber(stock) < quantity then
 end
 redis.call('decrby', key, quantity)
 return 1
-`
-
-var unlockLua = `
-if redis.call('get', KEYS[1]) == ARGV[1] then
-    return redis.call('del', KEYS[1])
-end
-return 0
-`
-
-var extendLua = `
-if redis.call('get', KEYS[1]) == ARGV[1] then
-    return redis.call('pexpire', KEYS[1], ARGV[2])
-end
-return 0
 `
 
 func Init(cfg *config.RedisConfig) error {
@@ -62,8 +50,12 @@ func StockKey(productID string) string {
 	return fmt.Sprintf("stock:%s", productID)
 }
 
-func LockKey(productID string) string {
-	return fmt.Sprintf("lock:stock:%s", productID)
+func ProductKey(productID string) string {
+	return fmt.Sprintf("product:%s", productID)
+}
+
+func ProductListKey() string {
+	return "product:list"
 }
 
 func IdempotentKey(requestID string) string {
@@ -87,39 +79,36 @@ func DecrementStock(ctx context.Context, productID string, quantity int) (int, e
 	return result, err
 }
 
-type Lock struct {
-	key        string
-	requestID  string
-	expiration time.Duration
+func DelStock(ctx context.Context, productID string) error {
+	return RDB.Del(ctx, StockKey(productID)).Err()
 }
 
-func TryLock(ctx context.Context, productID string, requestID string, expiration time.Duration) (*Lock, bool, error) {
-	key := LockKey(productID)
-	ok, err := RDB.SetNX(ctx, key, requestID, expiration).Result()
+func SetProduct(ctx context.Context, product *db.Product, expiration time.Duration) error {
+	data, err := json.Marshal(product)
 	if err != nil {
-		return nil, false, err
+		return err
 	}
-	if !ok {
-		return nil, false, nil
-	}
-	return &Lock{
-		key:        key,
-		requestID:  requestID,
-		expiration: expiration,
-	}, true, nil
+	return RDB.Set(ctx, ProductKey(product.ProductID), data, expiration).Err()
 }
 
-func (l *Lock) Unlock(ctx context.Context) error {
-	_, err := RDB.Eval(ctx, unlockLua, []string{l.key}, l.requestID).Result()
-	return err
-}
-
-func (l *Lock) Extend(ctx context.Context, extension time.Duration) (bool, error) {
-	result, err := RDB.Eval(ctx, extendLua, []string{l.key}, l.requestID, int64(extension.Milliseconds())).Int()
+func GetProduct(ctx context.Context, productID string) (*db.Product, error) {
+	data, err := RDB.Get(ctx, ProductKey(productID)).Bytes()
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return result == 1, nil
+	var product db.Product
+	if err := json.Unmarshal(data, &product); err != nil {
+		return nil, err
+	}
+	return &product, nil
+}
+
+func DelProduct(ctx context.Context, productID string) error {
+	return RDB.Del(ctx, ProductKey(productID)).Err()
+}
+
+func DelProductList(ctx context.Context) error {
+	return RDB.Del(ctx, ProductListKey()).Err()
 }
 
 func IsRequestProcessed(ctx context.Context, requestID string) (bool, error) {
@@ -168,4 +157,32 @@ func CartGetQuantity(ctx context.Context, userID string, productID string) (int,
 		return 0, err
 	}
 	return val, nil
+}
+
+func CartHasProduct(ctx context.Context, productID string) (bool, error) {
+	keys, err := RDB.Keys(ctx, "cart:*").Result()
+	if err != nil {
+		return false, err
+	}
+	for _, key := range keys {
+		exists, err := RDB.HExists(ctx, key, productID).Result()
+		if err != nil {
+			return false, err
+		}
+		if exists {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func CartRemoveProductFromAll(ctx context.Context, productID string) error {
+	keys, err := RDB.Keys(ctx, "cart:*").Result()
+	if err != nil {
+		return err
+	}
+	for _, key := range keys {
+		_ = RDB.HDel(ctx, key, productID).Err()
+	}
+	return nil
 }

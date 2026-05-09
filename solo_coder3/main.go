@@ -9,11 +9,12 @@ import (
 	"inventory-service/internal/cache"
 	"inventory-service/internal/db"
 	"inventory-service/internal/handler"
+	"inventory-service/internal/lock"
 )
 
 // @title Inventory Service API
-// @version 1.0
-// @description 库存服务 API，支持库存管理和购物车功能
+// @version 2.0
+// @description 库存服务 API，支持商品管理、库存管理和购物车功能
 // @host localhost:8080
 // @BasePath /
 // @schemes http
@@ -34,7 +35,17 @@ func main() {
 	}
 	log.Println("redis connected")
 
+	if err := lock.Init(&cfg.Redis); err != nil {
+		log.Fatalf("init lock failed: %v", err)
+	}
+	log.Println("distributed lock initialized")
+
 	mux := http.NewServeMux()
+	mux.HandleFunc("/product/create", handler.CreateProduct)
+	mux.HandleFunc("/product/get", handler.GetProduct)
+	mux.HandleFunc("/product/list", handler.ListProducts)
+	mux.HandleFunc("/product/update", handler.UpdateProduct)
+	mux.HandleFunc("/product/delete", handler.DeleteProduct)
 	mux.HandleFunc("/inventory/deduct", handler.Deduct)
 	mux.HandleFunc("/inventory/stock", handler.GetStock)
 	mux.HandleFunc("/inventory/set", handler.SetStock)
@@ -58,10 +69,122 @@ func main() {
 			"basePath": "/",
 			"schemes": ["http"],
 			"tags": [
+				{"name": "商品管理", "description": "商品相关接口"},
 				{"name": "库存管理", "description": "库存相关接口"},
 				{"name": "购物车", "description": "购物车相关接口"}
 			],
 			"paths": {
+				"/product/create": {
+					"post": {
+						"tags": ["商品管理"],
+						"summary": "创建商品",
+						"description": "创建新商品，可同时设置初始库存，商品ID由服务端自动生成",
+						"parameters": [{
+							"name": "body",
+							"in": "body",
+							"required": true,
+							"schema": {
+								"type": "object",
+								"properties": {
+									"name": {"type": "string"},
+									"description": {"type": "string"},
+									"price": {"type": "number"},
+									"initial_stock": {"type": "integer"}
+								},
+								"required": ["name"]
+							}
+						}],
+						"responses": {
+							"200": {"description": "创建成功，返回生成的商品ID"},
+							"400": {"description": "参数错误"},
+							"500": {"description": "服务器内部错误"}
+						}
+					}
+				},
+				"/product/get": {
+					"get": {
+						"tags": ["商品管理"],
+						"summary": "获取商品详情",
+						"description": "根据商品ID获取商品详情，包含库存信息",
+						"parameters": [{
+							"name": "product_id",
+							"in": "query",
+							"type": "string",
+							"required": true
+						}],
+						"responses": {
+							"200": {"description": "获取成功"},
+							"400": {"description": "请求参数错误"},
+							"404": {"description": "商品不存在"},
+							"500": {"description": "服务器内部错误"}
+						}
+					}
+				},
+				"/product/list": {
+					"get": {
+						"tags": ["商品管理"],
+						"summary": "获取商品列表",
+						"description": "获取所有商品列表，包含库存信息",
+						"responses": {
+							"200": {"description": "获取成功"},
+							"500": {"description": "服务器内部错误"}
+						}
+					}
+				},
+				"/product/update": {
+					"post": {
+						"tags": ["商品管理"],
+						"summary": "更新商品",
+						"description": "更新商品信息，支持部分更新",
+						"parameters": [{
+							"name": "body",
+							"in": "body",
+							"required": true,
+							"schema": {
+								"type": "object",
+								"properties": {
+									"product_id": {"type": "string"},
+									"name": {"type": "string"},
+									"description": {"type": "string"},
+									"price": {"type": "number"},
+									"status": {"type": "integer"}
+								},
+								"required": ["product_id"]
+							}
+						}],
+						"responses": {
+							"200": {"description": "更新成功"},
+							"400": {"description": "参数错误"},
+							"404": {"description": "商品不存在"},
+							"500": {"description": "服务器内部错误"}
+						}
+					}
+				},
+				"/product/delete": {
+					"post": {
+						"tags": ["商品管理"],
+						"summary": "删除商品",
+						"description": "删除商品及其库存，同时从所有购物车中移除该商品",
+						"parameters": [{
+							"name": "body",
+							"in": "body",
+							"required": true,
+							"schema": {
+								"type": "object",
+								"properties": {
+									"product_id": {"type": "string"}
+								},
+								"required": ["product_id"]
+							}
+						}],
+						"responses": {
+							"200": {"description": "删除成功"},
+							"400": {"description": "参数错误"},
+							"404": {"description": "商品不存在"},
+							"500": {"description": "服务器内部错误"}
+						}
+					}
+				},
 				"/inventory/deduct": {
 					"post": {
 						"tags": ["库存管理"],
