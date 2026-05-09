@@ -1,5 +1,46 @@
 basePath: /
 definitions:
+  dto.AccountTypeListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.AccountTypeResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  dto.AccountTypeResponse:
+    properties:
+      code:
+        example: platform_commission
+        type: string
+      created_at:
+        type: string
+      description:
+        example: 结算后平台应得的佣金部分
+        type: string
+      id:
+        example: 1
+        type: integer
+      name:
+        example: 我的佣金（平台）
+        type: string
+      purpose:
+        example: 收取佣金
+        type: string
+      role_code:
+        example: platform
+        type: string
+      status:
+        example: 1
+        type: integer
+      updated_at:
+        type: string
+    type: object
   dto.AssignRolePermissionsRequest:
     properties:
       permission_ids:
@@ -17,6 +58,32 @@ definitions:
         type: array
     required:
     - role_ids
+    type: object
+  dto.CreateAccountTypeRequest:
+    properties:
+      code:
+        example: platform_commission
+        type: string
+      description:
+        example: 结算后平台应得的佣金部分
+        type: string
+      name:
+        example: 我的佣金（平台）
+        type: string
+      purpose:
+        example: 收取佣金
+        type: string
+      role_code:
+        example: platform
+        type: string
+      status:
+        example: 1
+        type: integer
+    required:
+    - code
+    - name
+    - purpose
+    - role_code
     type: object
   dto.CreatePermissionRequest:
     properties:
@@ -210,6 +277,27 @@ definitions:
       updated_at:
         type: string
     type: object
+  dto.UpdateAccountTypeRequest:
+    properties:
+      code:
+        example: platform_commission
+        type: string
+      description:
+        example: 结算后平台应得的佣金部分
+        type: string
+      name:
+        example: 我的佣金（平台）
+        type: string
+      purpose:
+        example: 收取佣金
+        type: string
+      role_code:
+        example: platform
+        type: string
+      status:
+        example: 1
+        type: integer
+    type: object
   dto.UpdatePermissionRequest:
     properties:
       action:
@@ -338,6 +426,206 @@ info:
   title: 管理系统 API
   version: "1.0"
 paths:
+  /api/account-types:
+    get:
+      consumes:
+      - application/json
+      description: 获取账户类型列表，支持分页和条件查询
+      parameters:
+      - description: 账户类型名称（模糊查询）
+        in: query
+        name: name
+        type: string
+      - description: 账户类型编码（模糊查询）
+        in: query
+        name: code
+        type: string
+      - description: 账户用途（模糊查询）
+        in: query
+        name: purpose
+        type: string
+      - description: 所属角色编码
+        in: query
+        name: role_code
+        type: string
+      - description: 状态（1启用 0禁用）
+        in: query
+        name: status
+        type: integer
+      - description: 页码（默认1）
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量（默认10）
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AccountTypeListResponse'
+              type: object
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取账户类型列表
+      tags:
+      - 账户类型管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新账户类型
+      parameters:
+      - description: 账户类型信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateAccountTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AccountTypeResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 创建账户类型
+      tags:
+      - 账户类型管理
+  /api/account-types/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除账户类型
+      parameters:
+      - description: 账户类型ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 账户类型不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 删除账户类型
+      tags:
+      - 账户类型管理
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取账户类型详情
+      parameters:
+      - description: 账户类型ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AccountTypeResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 账户类型不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 获取账户类型详情
+      tags:
+      - 账户类型管理
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新账户类型信息
+      parameters:
+      - description: 账户类型ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 账户类型信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAccountTypeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 成功
+          schema:
+            allOf:
+            - $ref: '#/definitions/utils.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.AccountTypeResponse'
+              type: object
+        "400":
+          description: 请求参数错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "404":
+          description: 账户类型不存在
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "500":
+          description: 服务器内部错误
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: 更新账户类型
+      tags:
+      - 账户类型管理
   /api/health:
     get:
       consumes:

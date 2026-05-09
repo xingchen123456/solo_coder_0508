@@ -21,6 +21,326 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
+        "/api/account-types": {
+            "get": {
+                "description": "获取账户类型列表，支持分页和条件查询",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户类型管理"
+                ],
+                "summary": "获取账户类型列表",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "账户类型名称（模糊查询）",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "账户类型编码（模糊查询）",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "账户用途（模糊查询）",
+                        "name": "purpose",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "所属角色编码",
+                        "name": "role_code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "状态（1启用 0禁用）",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "页码（默认1）",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量（默认10）",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AccountTypeListResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "创建一个新账户类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户类型管理"
+                ],
+                "summary": "创建账户类型",
+                "parameters": [
+                    {
+                        "description": "账户类型信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateAccountTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AccountTypeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/account-types/{id}": {
+            "get": {
+                "description": "根据ID获取账户类型详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户类型管理"
+                ],
+                "summary": "获取账户类型详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "账户类型ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AccountTypeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "账户类型不存在",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "根据ID更新账户类型信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户类型管理"
+                ],
+                "summary": "更新账户类型",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "账户类型ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "账户类型信息",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateAccountTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/utils.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.AccountTypeResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "账户类型不存在",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据ID删除账户类型",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "账户类型管理"
+                ],
+                "summary": "删除账户类型",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "账户类型ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "成功",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "请求参数错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "账户类型不存在",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "服务器内部错误",
+                        "schema": {
+                            "$ref": "#/definitions/utils.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/health": {
             "get": {
                 "description": "检查系统健康状态",
@@ -1328,6 +1648,65 @@
         }
     },
     "definitions": {
+        "dto.AccountTypeListResponse": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AccountTypeResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AccountTypeResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "platform_commission"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "结算后平台应得的佣金部分"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "我的佣金（平台）"
+                },
+                "purpose": {
+                    "type": "string",
+                    "example": "收取佣金"
+                },
+                "role_code": {
+                    "type": "string",
+                    "example": "platform"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.AssignRolePermissionsRequest": {
             "type": "object",
             "required": [
@@ -1353,6 +1732,41 @@
                     "items": {
                         "type": "integer"
                     }
+                }
+            }
+        },
+        "dto.CreateAccountTypeRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "purpose",
+                "role_code"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "platform_commission"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "结算后平台应得的佣金部分"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "我的佣金（平台）"
+                },
+                "purpose": {
+                    "type": "string",
+                    "example": "收取佣金"
+                },
+                "role_code": {
+                    "type": "string",
+                    "example": "platform"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },
@@ -1622,6 +2036,35 @@
                 },
                 "updated_at": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdateAccountTypeRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "platform_commission"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "结算后平台应得的佣金部分"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "我的佣金（平台）"
+                },
+                "purpose": {
+                    "type": "string",
+                    "example": "收取佣金"
+                },
+                "role_code": {
+                    "type": "string",
+                    "example": "platform"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 1
                 }
             }
         },

@@ -17,6 +17,7 @@ func SetupRoutes(r *gin.Engine, logger *zap.Logger) {
 	userController := controllers.NewUserController()
 	roleController := controllers.NewRoleController()
 	permissionController := controllers.NewPermissionController()
+	accountTypeController := controllers.NewAccountTypeController()
 
 	api := r.Group("/api")
 	{
@@ -52,6 +53,15 @@ func SetupRoutes(r *gin.Engine, logger *zap.Logger) {
 			permissions.GET("/:id", permissionController.Get)
 			permissions.PUT("/:id", permissionController.Update)
 			permissions.DELETE("/:id", permissionController.Delete)
+		}
+
+		accountTypes := api.Group("/account-types")
+		{
+			accountTypes.POST("", accountTypeController.Create)
+			accountTypes.GET("", accountTypeController.List)
+			accountTypes.GET("/:id", accountTypeController.Get)
+			accountTypes.PUT("/:id", accountTypeController.Update)
+			accountTypes.DELETE("/:id", accountTypeController.Delete)
 		}
 	}
 }
