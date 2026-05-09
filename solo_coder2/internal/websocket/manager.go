@@ -8,6 +8,7 @@ import (
 
 	"game_backend/internal/redis"
 	"game_backend/internal/utils"
+	gamepb "game_backend/proto/game"
 
 	"github.com/gorilla/websocket"
 	"go.uber.org/zap"

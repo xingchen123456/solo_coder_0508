@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"game_backend/internal/websocket"
-	proto "game_backend/proto/game"
 
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type MessageService struct {
-	proto.UnimplementedMessageServiceServer
+	gamepb.UnimplementedMessageServiceServer
 	wsManager *websocket.Manager
 }
 
@@ -20,17 +20,17 @@ func NewMessageService(wsManager *websocket.Manager) *MessageService {
 	}
 }
 
-func (s *MessageService) SendChat(ctx context.Context, req *proto.SendChatRequest) (*proto.SendChatResponse, error) {
+func (s *MessageService) SendChat(ctx context.Context, req *gamepb.SendChatRequest) (*gamepb.SendChatResponse, error) {
 	zap.L().Info("SendChat called", zap.String("room_id", req.RoomId))
 
 	if s.wsManager == nil {
-		return &proto.SendChatResponse{
+		return &gamepb.SendChatResponse{
 			Code:    500,
 			Message: "WebSocket管理器未初始化",
 		}, nil
 	}
 
-	msg := &proto.ChatMessage{
+	msg := &gamepb.ChatMessage{
 		RoomId:    req.RoomId,
 		Content:   req.Content,
 		Timestamp: 0,
@@ -38,43 +38,43 @@ func (s *MessageService) SendChat(ctx context.Context, req *proto.SendChatReques
 
 	data, err := proto.Marshal(msg)
 	if err != nil {
-		return &proto.SendChatResponse{
+		return &gamepb.SendChatResponse{
 			Code:    500,
 			Message: "消息序列化失败",
 		}, nil
 	}
 
-	wsMsg := &proto.WSMessage{
-		Type: proto.MessageType_MESSAGE_TYPE_CHAT,
+	wsMsg := &gamepb.WSMessage{
+		Type: gamepb.MessageType_MESSAGE_TYPE_CHAT,
 		Data: data,
 	}
 
 	s.wsManager.BroadcastToRoom(req.RoomId, wsMsg)
 
-	return &proto.SendChatResponse{
+	return &gamepb.SendChatResponse{
 		Code:    200,
 		Message: "发送成功",
 	}, nil
 }
 
-func (s *MessageService) Broadcast(ctx context.Context, req *proto.BroadcastRequest) (*proto.BroadcastResponse, error) {
+func (s *MessageService) Broadcast(ctx context.Context, req *gamepb.BroadcastRequest) (*gamepb.BroadcastResponse, error) {
 	zap.L().Info("Broadcast called", zap.String("room_id", req.RoomId))
 
 	if s.wsManager == nil {
-		return &proto.BroadcastResponse{
+		return &gamepb.BroadcastResponse{
 			Code:    500,
 			Message: "WebSocket管理器未初始化",
 		}, nil
 	}
 
-	wsMsg := &proto.WSMessage{
+	wsMsg := &gamepb.WSMessage{
 		Type: req.Type,
 		Data: req.Data,
 	}
 
 	s.wsManager.BroadcastToRoom(req.RoomId, wsMsg)
 
-	return &proto.BroadcastResponse{
+	return &gamepb.BroadcastResponse{
 		Code:    200,
 		Message: "广播成功",
 	}, nil
