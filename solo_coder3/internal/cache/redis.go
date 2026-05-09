@@ -70,6 +70,10 @@ func IdempotentKey(requestID string) string {
 	return fmt.Sprintf("idempotent:%s", requestID)
 }
 
+func CartKey(userID string) string {
+	return fmt.Sprintf("cart:%s", userID)
+}
+
 func SetStock(ctx context.Context, productID string, stock int, expiration time.Duration) error {
 	return RDB.Set(ctx, StockKey(productID), stock, expiration).Err()
 }
@@ -132,4 +136,36 @@ func MarkRequestProcessed(ctx context.Context, requestID string, result string, 
 
 func GetRequestResult(ctx context.Context, requestID string) (string, error) {
 	return RDB.Get(ctx, IdempotentKey(requestID)).Result()
+}
+
+func CartAddItem(ctx context.Context, userID string, productID string, quantity int) error {
+	return RDB.HSet(ctx, CartKey(userID), productID, quantity).Err()
+}
+
+func CartGetItem(ctx context.Context, userID string, productID string) (string, error) {
+	return RDB.HGet(ctx, CartKey(userID), productID).Result()
+}
+
+func CartGetAll(ctx context.Context, userID string) (map[string]string, error) {
+	return RDB.HGetAll(ctx, CartKey(userID)).Result()
+}
+
+func CartItemExists(ctx context.Context, userID string, productID string) (bool, error) {
+	return RDB.HExists(ctx, CartKey(userID), productID).Result()
+}
+
+func CartDeleteItem(ctx context.Context, userID string, productID string) error {
+	return RDB.HDel(ctx, CartKey(userID), productID).Err()
+}
+
+func CartClear(ctx context.Context, userID string) error {
+	return RDB.Del(ctx, CartKey(userID)).Err()
+}
+
+func CartGetQuantity(ctx context.Context, userID string, productID string) (int, error) {
+	val, err := RDB.HGet(ctx, CartKey(userID), productID).Int()
+	if err != nil {
+		return 0, err
+	}
+	return val, nil
 }

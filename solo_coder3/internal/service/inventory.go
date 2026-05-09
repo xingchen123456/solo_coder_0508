@@ -17,6 +17,10 @@ var (
 	ErrProductNotFound      = errors.New("product not found")
 	ErrLockAcquireFailed    = errors.New("failed to acquire lock")
 	ErrRequestInProgress    = errors.New("request is being processed")
+	ErrCartItemExists       = errors.New("item already in cart")
+	ErrCartItemNotFound     = errors.New("item not found in cart")
+	ErrInvalidQuantity     = errors.New("invalid quantity")
+	ErrUserIDRequired       = errors.New("user_id required")
 )
 
 type DeductRequest struct {
@@ -29,6 +33,23 @@ type DeductResult struct {
 	Success bool
 	Retried bool
 	Reason  string
+}
+
+type CartItem struct {
+	ProductID string `json:"product_id"`
+	Quantity  int    `json:"quantity"`
+}
+
+type AddToCartRequest struct {
+	UserID    string
+	ProductID string
+	Quantity  int
+}
+
+type UpdateCartRequest struct {
+	UserID    string
+	ProductID string
+	Quantity  int
 }
 
 const (
@@ -223,4 +244,123 @@ func SetStock(ctx context.Context, productID string, stock int) error {
 	}
 
 	return cache.SetStock(ctx, productID, stock, 5*time.Minute)
+}
+
+func AddToCart(ctx context.Context, req AddToCartRequest) error {
+	if req.UserID == "" {
+		return ErrUserIDRequired
+	}
+	if req.ProductID == "" {
+		return ErrProductNotFound
+	}
+	if req.Quantity <= 0 {
+		return ErrInvalidQuantity
+	}
+
+	exists, err := cache.CartItemExists(ctx, req.UserID, req.ProductID)
+	if err != nil {
+		return err
+	}
+	if exists {
+		return ErrCartItemExists
+	}
+
+	stock, err := GetStock(ctx, req.ProductID)
+	if err != nil {
+		if errors.Is(err, ErrProductNotFound) {
+			return ErrProductNotFound
+		}
+		return err
+	}
+
+	if stock < req.Quantity {
+		return ErrInsufficientStock
+	}
+
+	return cache.CartAddItem(ctx, req.UserID, req.ProductID, req.Quantity)
+}
+
+func GetCart(ctx context.Context, userID string) ([]CartItem, error) {
+	if userID == "" {
+		return nil, ErrUserIDRequired
+	}
+
+	items, err := cache.CartGetAll(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	cartItems := make([]CartItem, 0, len(items))
+	for productID, qtyStr := range items {
+		var qty int
+		fmt.Sscanf(qtyStr, "%d", &qty)
+		cartItems = append(cartItems, CartItem{
+			ProductID: productID,
+			Quantity:  qty,
+		})
+	}
+
+	return cartItems, nil
+}
+
+func UpdateCartItem(ctx context.Context, req UpdateCartRequest) error {
+	if req.UserID == "" {
+		return ErrUserIDRequired
+	}
+	if req.ProductID == "" {
+		return ErrProductNotFound
+	}
+	if req.Quantity < 0 {
+		return ErrInvalidQuantity
+	}
+
+	exists, err := cache.CartItemExists(ctx, req.UserID, req.ProductID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return ErrCartItemNotFound
+	}
+
+	if req.Quantity == 0 {
+		return cache.CartDeleteItem(ctx, req.UserID, req.ProductID)
+	}
+
+	stock, err := GetStock(ctx, req.ProductID)
+	if err != nil {
+		return err
+	}
+
+	if stock < req.Quantity {
+		return ErrInsufficientStock
+	}
+
+	return cache.CartAddItem(ctx, req.UserID, req.ProductID, req.Quantity)
+}
+
+func RemoveFromCart(ctx context.Context, userID string, productID string) error {
+	if userID == "" {
+		return ErrUserIDRequired
+	}
+	if productID == "" {
+		return ErrProductNotFound
+	}
+
+	exists, err := cache.CartItemExists(ctx, userID, productID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return ErrCartItemNotFound
+	}
+
+	return cache.CartDeleteItem(ctx, userID, productID)
+}
+
+func ClearCart(ctx context.Context, userID string) error {
+	if userID == "" {
+		return ErrUserIDRequired
+	}
+
+	return cache.CartClear(ctx, userID)
 }
