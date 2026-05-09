@@ -1,0 +1,25 @@
+server:
+  mode: debug
+  port: 8080
+
+mysql:
+  host: 127.0.0.1
+  port: 3306
+  username: root
+  password: 123
+  database: management
+  charset: utf8mb4
+  max_open_conns: 100
+  max_idle_conns: 10
+
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 100
+
+etcd:
+  endpoints:
+    - 127.0.0.1:2379
+  dial_timeout: 5
