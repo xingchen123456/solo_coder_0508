@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+package game;
+option go_package = "game_backend/proto/game";
+
+enum MessageType {
+    MESSAGE_TYPE_UNKNOWN = 0;
+    MESSAGE_TYPE_HEARTBEAT = 1;
+    MESSAGE_TYPE_CHAT = 2;
+    MESSAGE_TYPE_ROOM_NOTICE = 3;
+    MESSAGE_TYPE_GAME_ACTION = 4;
+    MESSAGE_TYPE_SYSTEM_NOTICE = 5;
+}
+
+message ChatMessage {
+    int64 user_id = 1;
+    string username = 2;
+    string content = 3;
+    string room_id = 4;
+    int64 timestamp = 5;
+}
+
+message RoomNotice {
+    string room_id = 1;
+    string notice_type = 2;
+    int64 user_id = 3;
+    string username = 4;
+    string content = 5;
+    int64 timestamp = 6;
+}
+
+message GameAction {
+    string room_id = 1;
+    int64 user_id = 2;
+    string action_type = 3;
+    bytes data = 4;
+    int64 timestamp = 5;
+}
+
+message SystemNotice {
+    string title = 1;
+    string content = 2;
+    int64 timestamp = 3;
+}
+
+message WSMessage {
+    MessageType type = 1;
+    bytes data = 2;
+    int64 timestamp = 3;
+    string request_id = 4;
+}
+
+message WSRequest {
+    MessageType type = 1;
+    bytes data = 2;
+    int64 timestamp = 3;
+    string request_id = 4;
+}
+
+message WSResponse {
+    MessageType type = 1;
+    int32 code = 2;
+    string message = 3;
+    bytes data = 4;
+    int64 timestamp = 5;
+    string request_id = 6;
+}
+
+message HeartbeatRequest {
+    int64 timestamp = 1;
+}
+
+message HeartbeatResponse {
+    int64 server_timestamp = 1;
+}
+
+message SendChatRequest {
+    string room_id = 1;
+    string content = 2;
+}
+
+message SendChatResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+message BroadcastRequest {
+    string room_id = 1;
+    MessageType type = 2;
+    bytes data = 3;
+}
+
+message BroadcastResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+service MessageService {
+    rpc SendChat(SendChatRequest) returns (SendChatResponse);
+    rpc Broadcast(BroadcastRequest) returns (BroadcastResponse);
+}

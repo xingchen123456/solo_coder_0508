@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package game;
+option go_package = "game_backend/proto/game";
+
+enum RoomType {
+    ROOM_TYPE_UNKNOWN = 0;
+    ROOM_TYPE_PUBLIC = 1;
+    ROOM_TYPE_PRIVATE = 2;
+}
+
+enum RoomStatus {
+    ROOM_STATUS_UNKNOWN = 0;
+    ROOM_STATUS_WAITING = 1;
+    ROOM_STATUS_PLAYING = 2;
+    ROOM_STATUS_FINISHED = 3;
+}
+
+message RoomInfo {
+    string room_id = 1;
+    string room_name = 2;
+    RoomType room_type = 3;
+    RoomStatus status = 4;
+    int32 max_players = 5;
+    int32 current_players = 6;
+    int64 owner_id = 7;
+    string password = 8;
+    repeated int64 player_ids = 9;
+    int64 create_time = 10;
+}
+
+message CreateRoomRequest {
+    string token = 1;
+    string room_name = 2;
+    RoomType room_type = 3;
+    int32 max_players = 4;
+    string password = 5;
+}
+
+message CreateRoomResponse {
+    int32 code = 1;
+    string message = 2;
+    RoomInfo room = 3;
+}
+
+message JoinRoomRequest {
+    string token = 1;
+    string room_id = 2;
+    string password = 3;
+}
+
+message JoinRoomResponse {
+    int32 code = 1;
+    string message = 2;
+    RoomInfo room = 3;
+}
+
+message LeaveRoomRequest {
+    string token = 1;
+    string room_id = 2;
+}
+
+message LeaveRoomResponse {
+    int32 code = 1;
+    string message = 2;
+}
+
+message GetRoomListRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+    RoomType room_type = 3;
+}
+
+message GetRoomListResponse {
+    int32 code = 1;
+    string message = 2;
+    repeated RoomInfo rooms = 3;
+    int32 total = 4;
+}
+
+message GetRoomInfoRequest {
+    string room_id = 1;
+}
+
+message GetRoomInfoResponse {
+    int32 code = 1;
+    string message = 2;
+    RoomInfo room = 3;
+}
+
+service RoomService {
+    rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+    rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+    rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+    rpc GetRoomList(GetRoomListRequest) returns (GetRoomListResponse);
+    rpc GetRoomInfo(GetRoomInfoRequest) returns (GetRoomInfoResponse);
+}
