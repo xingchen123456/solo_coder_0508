@@ -1,0 +1,19 @@
+Name: user-api
+Host: 0.0.0.0
+Port: 8888
+Mode: dev
+
+DB:
+  Host: localhost
+  Port: 3306
+  User: root
+  Password: "123"
+  Database: solo_coder
+
+Jwt:
+  Secret: your-secret-key-change-this
+  ExpireTime: 86400
+
+Wechat:
+  AppID: your-wechat-appid
+  AppSecret: your-wechat-appsecret

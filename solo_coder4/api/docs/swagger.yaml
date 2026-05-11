@@ -1,0 +1,172 @@
+basePath: /api
+definitions:
+  types.LoginRequest:
+    properties:
+      code:
+        example: wx_code_xxx
+        type: string
+      loginType:
+        enum:
+        - 0
+        - 1
+        example: 0
+        type: integer
+      password:
+        example: "123456"
+        type: string
+      username:
+        example: testuser
+        type: string
+    type: object
+  types.LoginResponse:
+    properties:
+      avatar:
+        example: https://example.com/avatar.png
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIs...
+        type: string
+      userId:
+        example: 1
+        type: integer
+      username:
+        example: testuser
+        type: string
+    type: object
+  types.RegisterRequest:
+    properties:
+      email:
+        example: test@example.com
+        type: string
+      password:
+        example: "123456"
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
+      username:
+        example: testuser
+        type: string
+    type: object
+  types.RegisterResponse:
+    properties:
+      message:
+        example: Registration successful
+        type: string
+      userId:
+        example: 1
+        type: integer
+      username:
+        example: testuser
+        type: string
+    type: object
+  types.UserInfoResponse:
+    properties:
+      avatar:
+        example: https://example.com/avatar.png
+        type: string
+      email:
+        example: test@example.com
+        type: string
+      phone:
+        example: "13800138000"
+        type: string
+      userId:
+        example: 1
+        type: integer
+      username:
+        example: testuser
+        type: string
+    type: object
+host: localhost:8888
+info:
+  contact: {}
+  description: 基于 go-zero 框架开发的用户认证系统，支持账号密码登录和微信登录
+  title: 用户认证系统 API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: 支持账号密码登录和微信登录
+      parameters:
+      - description: 登录信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/types.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 用户登录
+      tags:
+      - 用户认证
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: 用户通过用户名和密码注册新账号
+      parameters:
+      - description: 注册信息
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/types.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 用户注册
+      tags:
+      - 用户认证
+  /user/info:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.UserInfoResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 获取用户信息
+      tags:
+      - 用户信息
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
